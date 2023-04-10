@@ -50,9 +50,16 @@ class MyFrame(customtkinter.CTkFrame):
         self.location_entry.configure(state="disabled")
         self.change_loc_entry_button.configure(state="disabled")
 
+    def change_location_text(self, new_loc_text):
+        self.location_text = new_loc_text
+
     def change_location(self):
         temp = self.location_entry.get()
-        self.location_label.configure(text=temp)
+        if temp != "":
+            self.location_label.configure(text=temp)
+            self.change_location_text(temp)
+        else:
+            self.location_label.configure(text=self.location_text)
         #self.location_entry.delete(0, len(temp))
         self.location_entry.configure(text_color=("#6ea3ff","#0d182b"))
         self.hide_loc_entry()
