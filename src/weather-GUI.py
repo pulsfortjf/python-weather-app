@@ -10,34 +10,48 @@ customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-bl
 class MyFrame(customtkinter.CTkFrame):
     location_text = "LOCATION"
 
+    tutorial_showing = True
+
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
         location_font = customtkinter.CTkFont(family="Century Gothic", size=30)
         forecast_font = customtkinter.CTkFont(family="Century Gothic", size=20)
+        tutorial_font = customtkinter.CTkFont(family="Century Gothic", size=14)
 
         self._fg_color=("#6ea3ff","#0d182b")
         self._border_color=("#6ea3ff","#0d182b")
         self._border_width=1
 
         # add widgets onto the frame...
-        self.location_entry = customtkinter.CTkEntry(self, placeholder_text="Enter your current location (city or town and state)", fg_color="transparent", border_width=1, width=300, state="normal")
-        self.location_entry.grid(row=8, column=0, padx=30, sticky="nsew")
-
         self.location_label = customtkinter.CTkLabel(self, height=50, width=100, corner_radius=10, fg_color="transparent", text=self.location_text, font=location_font, anchor="center")
         self.location_label.grid(row=0, column=0, padx=30, columnspan=3, sticky="nsew")
-
-        self.units_button = customtkinter.CTkButton(self, fg_color="transparent", text="C", font=forecast_font, height=40, width=40, command=self.change_units, anchor="center")
-        self.units_button.grid(row=8, column=1, padx=0, sticky="nsew")
-
-        self.enable_loc_entry_button = customtkinter.CTkButton(self, fg_color="transparent", text="+", font=forecast_font, height=40, width=40, command=self.change_location, anchor="center")
-        self.enable_loc_entry_button.grid(row=8, column=2, padx=30, sticky="nsew")
 
         self.forecast_button = customtkinter.CTkButton(self, fg_color="#3464b3", text="Forecast", font=forecast_font, height=40, width=400, anchor="center", command=self.find_weather)
         self.forecast_button.grid(row=1, column=0, padx=30, pady=10, columnspan=3, sticky="nsew")
 
-        self.forecast_label = customtkinter.CTkLabel(self, height=400, width=400, corner_radius=10, fg_color="transparent", text="", font=forecast_font, anchor="w", justify="left")
+        self.fbutton_tutorial_label = customtkinter.CTkLabel(self, height=100, width=400, corner_radius=10, fg_color="transparent", justify="left",
+                                                             text="When location and units have been selected,\nclick Forecast to see the weather for that location", font=tutorial_font, anchor="nw")
+        self.fbutton_tutorial_label.grid(row=2, column=0, columnspan=3, padx=30, sticky="nsew")
+
+        self.forecast_label = customtkinter.CTkLabel(self, height=200, width=400, corner_radius=10, fg_color="transparent", text="", font=forecast_font, anchor="w", justify="left")
         self.forecast_label.grid(row=3, column=0, padx=30, columnspan=3, sticky="nsw")
+
+        self.ubutton_tutorial_label = customtkinter.CTkLabel(self, height=100, width=150, corner_radius=10, fg_color="transparent", justify="left",
+                                                             text="The letter shown is\nthe temperature units\n(C or F). Click the button\nto change the units", font=tutorial_font, anchor="e")
+        self.ubutton_tutorial_label.grid(row=7, column=0, columnspan=2, sticky="nse")
+
+        self.plus_button_tutorial_label = customtkinter.CTkLabel(self, height=100, width=100, corner_radius=10, fg_color="transparent", text="Click + to\nchange\nthe location", font=tutorial_font, anchor="w", justify="left")
+        self.plus_button_tutorial_label.grid(row=7, column=2, sticky="nse")
+
+        self.location_entry = customtkinter.CTkEntry(self, placeholder_text="Enter your current location (city or town and state)", fg_color="transparent", border_width=1, width=300, state="normal")
+        self.location_entry.grid(row=8, column=0, padx=30, sticky="nsew")
+
+        self.units_button = customtkinter.CTkButton(self, fg_color="transparent", text="C", font=forecast_font, height=40, width=40, command=self.change_units, anchor="center")
+        self.units_button.grid(row=8, column=1, padx=0, sticky="ns")
+
+        self.enable_loc_entry_button = customtkinter.CTkButton(self, fg_color="transparent", text="+", font=forecast_font, height=40, width=40, command=self.change_location, anchor="center")
+        self.enable_loc_entry_button.grid(row=8, column=2, padx=30, sticky="ns")
 
     def change_units(self):
         curr_units = self.units_button.cget("text")
@@ -51,9 +65,13 @@ class MyFrame(customtkinter.CTkFrame):
         self.location_text = new_loc_text
 
     def change_location(self):
+        if self.tutorial_showing:
+            self.close_tutorial()
+        
         temp = self.location_entry.get()
         if temp != "":
             self.location_label.configure(text=temp)
+            self.forecast_label.configure(text="")
             self.change_location_text(temp)
         else:
             self.location_label.configure(text=self.location_text)
@@ -71,6 +89,17 @@ class MyFrame(customtkinter.CTkFrame):
     def time_format_for_location(self, utc_with_tz):
         local_time = datetime.utcfromtimestamp(utc_with_tz)
         return local_time.time()
+
+    def close_tutorial(self):
+        self.fbutton_tutorial_label.configure(text="")
+        self.ubutton_tutorial_label.configure(text="")
+        self.plus_button_tutorial_label.configure(text="")
+
+        self.fbutton_tutorial_label.configure(height=0)
+        self.ubutton_tutorial_label.configure(height=0)
+        self.plus_button_tutorial_label.configure(height=0)
+
+        self.forecast_label.configure(height=360)
 
     def find_weather(self):
         api_key = "42fdbb39807f01a6f203d839aeb80cef"
